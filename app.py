@@ -9,11 +9,12 @@ app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = 'uploads'
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
+# Inicializa o banco de dados
 DB_NAME = 'agendamentos.db'
 def init_db():
     with sqlite3.connect(DB_NAME) as conn:
         cursor = conn.cursor()
-        cursor.execute("""CREATE TABLE IF NOT EXISTS chamados (
+        cursor.execute('''CREATE TABLE IF NOT EXISTS chamados (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             data TEXT,
             horario TEXT,
@@ -30,7 +31,7 @@ def init_db():
             observacao TEXT,
             foto_antes TEXT,
             foto_depois TEXT
-        )""")
+        )''')
 init_db()
 
 @app.route('/')
@@ -44,29 +45,35 @@ def index():
 @app.route('/novo', methods=['GET', 'POST'])
 def novo_chamado():
     if request.method == 'POST':
-        dados = request.form
-        foto_antes = request.files['foto_antes']
-        foto_depois = request.files['foto_depois']
+        try:
+            dados = request.form
+            foto_antes = request.files['foto_antes']
+            foto_depois = request.files['foto_depois']
 
-        filename_antes = secure_filename(foto_antes.filename)
-        filepath_antes = os.path.join(app.config['UPLOAD_FOLDER'], filename_antes)
-        foto_antes.save(filepath_antes)
+            os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
-        filename_depois = secure_filename(foto_depois.filename)
-        filepath_depois = os.path.join(app.config['UPLOAD_FOLDER'], filename_depois)
-        foto_depois.save(filepath_depois)
+            filename_antes = secure_filename(foto_antes.filename)
+            filepath_antes = os.path.join(app.config['UPLOAD_FOLDER'], filename_antes)
+            foto_antes.save(filepath_antes)
 
-        with sqlite3.connect(DB_NAME) as conn:
-            cursor = conn.cursor()
-            cursor.execute("""INSERT INTO chamados
-                (data, horario, cliente, telefone, endereco, bairro, servico, produto,
-                 status, forma_pg, quem_fez, valor, observacao, foto_antes, foto_depois)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""", 
-                (dados['data'], dados['horario'], dados['cliente'], dados['telefone'],
-                 dados['endereco'], dados['bairro'], dados['servico'], dados['produto'],
-                 dados['status'], dados['forma_pg'], dados['quem_fez'], dados['valor'],
-                 dados['observacao'], filename_antes, filename_depois))
-        return redirect('/')
+            filename_depois = secure_filename(foto_depois.filename)
+            filepath_depois = os.path.join(app.config['UPLOAD_FOLDER'], filename_depois)
+            foto_depois.save(filepath_depois)
+
+            with sqlite3.connect(DB_NAME) as conn:
+                cursor = conn.cursor()
+                cursor.execute('''INSERT INTO chamados
+                    (data, horario, cliente, telefone, endereco, bairro, servico, produto,
+                     status, forma_pg, quem_fez, valor, observacao, foto_antes, foto_depois)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
+                    (dados['data'], dados['horario'], dados['cliente'], dados['telefone'],
+                     dados['endereco'], dados['bairro'], dados['servico'], dados['produto'],
+                     dados['status'], dados['forma_pg'], dados['quem_fez'], dados['valor'],
+                     dados['observacao'], filename_antes, filename_depois))
+            return redirect('/')
+        except Exception as e:
+            print(f"Erro ao cadastrar chamado: {e}")
+            return "Erro interno no servidor", 500
     return render_template('novo.html')
 
 @app.route('/os/<int:chamado_id>')
@@ -87,6 +94,7 @@ def gerar_os(chamado_id):
     for i, campo in enumerate(campos):
         pdf.cell(0, 10, f"{campo}: {chamado[i]}", ln=True)
 
+    # Inserir imagens se existirem
     foto_antes = os.path.join(app.config['UPLOAD_FOLDER'], chamado[14])
     foto_depois = os.path.join(app.config['UPLOAD_FOLDER'], chamado[15])
 
