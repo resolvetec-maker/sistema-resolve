@@ -65,7 +65,7 @@ def novo_chamado():
                 cursor.execute('''INSERT INTO chamados
                     (data, horario, cliente, telefone, endereco, bairro, servico, produto,
                      status, forma_pg, quem_fez, valor, observacao, foto_antes, foto_depois)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
                     (dados['data'], dados['horario'], dados['cliente'], dados['telefone'],
                      dados['endereco'], dados['bairro'], dados['servico'], dados['produto'],
                      dados['status'], dados['forma_pg'], dados['quem_fez'], dados['valor'],
