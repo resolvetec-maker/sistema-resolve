@@ -3,16 +3,41 @@
 <head>
     <meta charset="UTF-8">
     <title>Novo Chamado</title>
+    <script>
+        function preencherDadosCliente() {
+            const clienteId = document.getElementById('cliente_id').value;
+            if (!clienteId) return;
+
+            fetch('/dados_cliente/' + clienteId)
+                .then(res => res.json())
+                .then(data => {
+                    if (data) {
+                        document.getElementById('telefone').value = data.celular || '';
+                        document.getElementById('endereco').value = data.endereco || '';
+                        document.getElementById('bairro').value = data.bairro || '';
+                    }
+                });
+        }
+    </script>
 </head>
 <body>
     <h1>Novo Chamado</h1>
     <form method="POST" enctype="multipart/form-data">
         <label>Data: <input type="date" name="data" required></label><br>
         <label>Horário: <input type="time" name="horario" required></label><br>
-        <label>Cliente: <input type="text" name="cliente" required></label><br>
-        <label>Telefone: <input type="text" name="telefone"></label><br>
-        <label>Endereço: <input type="text" name="endereco"></label><br>
-        <label>Bairro: <input type="text" name="bairro"></label><br>
+
+        <label>Cliente:</label><br>
+        <select name="cliente" id="cliente_id" onchange="preencherDadosCliente()" required>
+            <option value="">Selecione um cliente</option>
+<option value="1">João da Silva</option>
+<option value="2">Maria Tech LTDA</option>
+<option value="3">Carlos Oliveira</option>
+<option value="4">Bruna Eletrônica ME</option>
+        </select><br><br>
+
+        <label>Celular: <input type="text" name="telefone" id="telefone"></label><br>
+        <label>Endereço: <input type="text" name="endereco" id="endereco"></label><br>
+        <label>Bairro: <input type="text" name="bairro" id="bairro"></label><br>
         <label>Serviço: <input type="text" name="servico"></label><br>
         <label>Produto: <input type="text" name="produto"></label><br>
         <label>Status: <input type="text" name="status"></label><br>
