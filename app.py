@@ -113,3 +113,17 @@ def gerar_os(chamado_id):
 
 if __name__ == '__main__':
     app.run(debug=True)
+
+@app.route('/dados_cliente/<int:cliente_id>')
+def dados_cliente(cliente_id):
+    with sqlite3.connect(DB_NAME) as conn:
+        cursor = conn.cursor()
+        cursor.execute("SELECT celular, endereco, bairro FROM clientes WHERE id = ?", (cliente_id,))
+        row = cursor.fetchone()
+        if row:
+            return {
+                "celular": row[0],
+                "endereco": row[1],
+                "bairro": row[2]
+            }
+        return {}
