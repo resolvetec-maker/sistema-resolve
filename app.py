@@ -112,3 +112,11 @@ def novo():
 
 if __name__ == '__main__':
     app.run(debug=True)
+
+
+@app.route('/exportar_clientes')
+def exportar_clientes():
+    caminho = 'clientes.csv'
+    if os.path.exists(caminho):
+        return send_file(caminho, as_attachment=True)
+    return "Arquivo clientes.csv não encontrado", 404
