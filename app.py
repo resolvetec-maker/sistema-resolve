@@ -114,16 +114,32 @@ def gerar_os(chamado_id):
 if __name__ == '__main__':
     app.run(debug=True)
 
-@app.route('/dados_cliente/<int:cliente_id>')
-def dados_cliente(cliente_id):
-    with sqlite3.connect(DB_NAME) as conn:
-        cursor = conn.cursor()
-        cursor.execute("SELECT celular, endereco, bairro FROM clientes WHERE id = ?", (cliente_id,))
-        row = cursor.fetchone()
-        if row:
-            return {
-                "celular": row[0],
-                "endereco": row[1],
-                "bairro": row[2]
-            }
-        return {}
+@app.route('/cliente', methods=['GET', 'POST'])
+def cadastro_cliente():
+    if request.method == 'POST':
+        dados = request.form
+        try:
+            with sqlite3.connect(DB_NAME) as conn:
+                cursor = conn.cursor()
+                cursor.execute("""
+                    INSERT INTO clientes (tipo, nome, documento, celular, contato, cep, endereco, bairro, email, observacao, numero, complemento)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """, (
+                    dados['tipo'],
+                    dados['nome'],
+                    dados['documento'],
+                    dados['celular'],
+                    dados.get('contato', ''),
+                    dados['cep'],
+                    dados['endereco'],
+                    dados['bairro'],
+                    dados['email'],
+                    dados['observacao'],
+                    dados.get('numero', ''),
+                    dados.get('complemento', '')
+                ))
+            return redirect('/')
+        except Exception as e:
+            print(f"Erro ao cadastrar cliente: {e}")
+            return "Erro interno ao cadastrar cliente", 500
+    return render_template('cliente.html')
